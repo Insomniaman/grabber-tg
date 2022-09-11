@@ -1,0 +1,54 @@
+from telethon.sync import TelegramClient
+from telethon import events, sync, connection
+from telethon import functions, types
+from bs4 import BeautifulSoup
+import requests
+import time
+
+api_id = 0
+api_hash = 'x'
+
+
+def memb(chanel):
+    lis = []
+    with TelegramClient('session', api_id, api_hash) as client:
+        result = client(functions.channels.GetParticipantsRequest(
+            channel=chanel,
+            filter=types.ChannelParticipantsRecent(),
+            offset=42,
+            limit=150,
+            hash=0
+        ))
+        for user in result.users:
+            if user.username != None:
+                lis += [user.username]
+    return lis
+
+
+chanel = []
+
+for urls in range(1, 5):
+    url = 'https://tgram.me/supergroups/datingchats?page=' + str(urls)
+    response = requests.get(url=url)
+    response.encoding = 'utf-8'
+    soup = BeautifulSoup(response.text, 'lxml')
+    pagen = soup.find_all('a', class_="stretched-link p-0 m-0")
+    for txt in pagen:
+        chanel += ['t.me/' + txt.text[1:]]
+
+print('всего чатов - ', len(chanel), ' - введите номер чата для информации...')
+num_chat = int(input('номер:'))
+chat_info = chanel[num_chat - 1]
+cnt = len(memb(chat_info))
+print('ссылка на чат:', chat_info, 'кол-во человек - ', cnt)
+sms = input('введите сообщение, которое хотите разослать')
+
+clientt = TelegramClient('newp', api_id, api_hash)
+clientt.start()
+
+for people_say in range(len(memb(chat_info)) - 1):
+    times = cnt * 3
+    clientt.send_message(memb(chat_info)[people_say], sms)
+    time_ost = times - 3
+    print('сообщение отправлено', people_say + 1, '/', cnt, 'время до конца рассылки - ', time_ost, 'сек')
+    time.sleep(3)
