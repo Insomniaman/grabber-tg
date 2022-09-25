@@ -1,0 +1,12 @@
+# на каждую сессию перерыв 1 день, чтобы повторно накрутить просмотры
+
+from telethon.sessions import StringSession
+from telethon.sync import TelegramClient
+from telethon import functions, types
+with TelegramClient(StringSession(sess), api_id, api_hash) as client:   
+    result = client(functions.messages.GetMessagesViewsRequest(
+        peer='ссылка на канал',
+        id=[0], # id поста на который нужно крутить просмотры
+        increment=True
+    ))
+print(result.stringify())
